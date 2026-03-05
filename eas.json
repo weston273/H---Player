@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 16.0.0"
+    "version": ">= 16.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
@@ -19,6 +20,12 @@
     "production": {
       "android": {
         "buildType": "app-bundle"
+      }
+    },
+    "productionDebug": {
+      "android": {
+        "buildType": "app-bundle",
+        "gradleCommand": ":app:bundleRelease --stacktrace --info"
       }
     }
   },

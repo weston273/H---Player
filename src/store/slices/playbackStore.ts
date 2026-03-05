@@ -24,13 +24,31 @@ const initialState: PlaybackStateSnapshot = {
   repeatMode: 'off',
 };
 
+const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+
 export const usePlaybackStore = create<PlaybackStoreState>((set) => ({
   ...initialState,
   hydrated: false,
   setSnapshot: (snapshot) => set((state) => ({...state, ...snapshot})),
   hydrate: async () => {
-    const state = await PlaybackBridge.getState();
-    set({...state, hydrated: true});
+    let state: PlaybackStateSnapshot | null = null;
+
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      try {
+        state = await PlaybackBridge.getState();
+        break;
+      } catch {
+        if (attempt === 3) break;
+        await sleep(150 * (attempt + 1));
+      }
+    }
+
+    if (state) {
+      set({...state, hydrated: true});
+    } else {
+      set({hydrated: true});
+    }
+
     playbackEmitterEvents.subscribe((snapshot) => {
       set((prev) => ({...prev, ...snapshot}));
     });

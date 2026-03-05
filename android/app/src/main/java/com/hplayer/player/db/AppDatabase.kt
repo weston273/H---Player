@@ -36,7 +36,7 @@ import com.hplayer.player.db.entities.TrackEntity
         ScanStateEntity::class
     ],
     version = 1,
-    exportSchema = true
+    exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun trackDao(): TrackDao

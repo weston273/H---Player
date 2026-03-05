@@ -88,8 +88,8 @@ class PlaybackEngine(private val context: Context) {
     }
 
     fun getSnapshot(): PlaybackStateSnapshot {
-        val queue = player.mediaItems.mapIndexed { index, item ->
-            QueueItem(trackId = item.mediaId, index = index)
+        val queue = MutableList(player.mediaItemCount) { index ->
+            QueueItem(trackId = player.getMediaItemAt(index).mediaId, index = index)
         }
         val repeatMode = when (player.repeatMode) {
             Player.REPEAT_MODE_ALL -> "all"

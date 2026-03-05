@@ -10,21 +10,28 @@ type PlaybackNativeModule = {
   playTrack: (trackId: string) => Promise<void>;
 };
 
-const native = NativeModules.PlaybackModule as PlaybackNativeModule;
-const emitter = new NativeEventEmitter(NativeModules.PlaybackModule);
+const native = NativeModules.PlaybackModule as PlaybackNativeModule | undefined;
+const emitter = native ? new NativeEventEmitter(NativeModules.PlaybackModule) : null;
+
+function missingNativeModuleError() {
+  return Promise.reject(new Error('PlaybackModule is not available on this build.'));
+}
 
 export const playbackEmitterEvents = {
   subscribe: (callback: (snapshot: Partial<PlaybackStateSnapshot>) => void) => {
+    if (!emitter) {
+      return () => undefined;
+    }
     const sub = emitter.addListener('playbackStateChanged', callback);
     return () => sub.remove();
   },
 };
 
 export const PlaybackBridge = {
-  getState: () => native.getPlaybackState(),
-  togglePlayPause: () => native.togglePlayPause(),
-  seekTo: (positionMs: number) => native.seekTo(positionMs),
-  skipNext: () => native.skipNext(),
-  skipPrevious: () => native.skipPrevious(),
-  playTrack: (trackId: string) => native.playTrack(trackId),
+  getState: () => native?.getPlaybackState() ?? missingNativeModuleError(),
+  togglePlayPause: () => native?.togglePlayPause() ?? missingNativeModuleError(),
+  seekTo: (positionMs: number) => native?.seekTo(positionMs) ?? missingNativeModuleError(),
+  skipNext: () => native?.skipNext() ?? missingNativeModuleError(),
+  skipPrevious: () => native?.skipPrevious() ?? missingNativeModuleError(),
+  playTrack: (trackId: string) => native?.playTrack(trackId) ?? missingNativeModuleError(),
 };
